@@ -3,8 +3,8 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 
-const pathToPhaser = path.join(__dirname, "/node_modules/phaser/");
-const phaser = path.join(pathToPhaser, "src/phaser.js");
+const phaserModule = path.join(__dirname, "../node_modules/phaser/");
+const phaser = path.join(phaserModule, "dist/phaser.js");
 
 module.exports = {
   mode: "development",
@@ -16,6 +16,10 @@ module.exports = {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/
+      },
+      {
+        test: /phaser\.js$/,
+        loader: "expose-loader?Phaser"
       },
       {
         test: /\.js$/,

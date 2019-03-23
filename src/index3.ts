@@ -1,5 +1,4 @@
-import Phaser from "phaser";
-import logoImg from "./assets/logo.png";
+import "phaser";
 
 const config = {
   type: Phaser.AUTO,
@@ -15,7 +14,7 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload() {
-  this.load.image("logo", logoImg);
+  this.load.image("logo", "./assets/logo.png");
 }
 
 function create() {
