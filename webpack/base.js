@@ -3,9 +3,13 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const CleanWebpackPlugin = require("clean-webpack-plugin");
 
+const pathToPhaser = path.join(__dirname, "/node_modules/phaser/");
+const phaser = path.join(pathToPhaser, "src/phaser.js");
+
 module.exports = {
   mode: "development",
   devtool: "eval-source-map",
+  entry: "./src/index.ts",
   module: {
     rules: [
       {
@@ -31,7 +35,10 @@ module.exports = {
     ]
   },
   resolve: {
-    extensions: [".tsx", ".ts", ".js"]
+    extensions: [".tsx", ".ts", ".js"],
+    alias: {
+      phaser: phaser
+    }
   },
   plugins: [
     new CleanWebpackPlugin(["dist"], {
