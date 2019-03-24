@@ -10,6 +10,7 @@ export class Ghost extends TurningObject {
   mode: GhostMode;
   sfx: SFX;
   inGame = false;
+  name: string;
 
   private target = new Phaser.Geom.Point();
   private scatterTarget = new Phaser.Geom.Point();
@@ -33,6 +34,7 @@ export class Ghost extends TurningObject {
   ) {
     super(scene, x, y, key, frame, tileSize, speed);
 
+    this.name = key;
     this.scatterTarget = target;
     this.homeMarker.x = Math.floor(home.x / this.tileSize);
     this.homeMarker.y = Math.floor(home.y / this.tileSize);
@@ -98,7 +100,8 @@ export class Ghost extends TurningObject {
     this.restoreSpeed();
     this.inGame = false;
     this.play("walk");
-    // this.animations.stop("walk", true);
+    this.anims.stop();
+    // this.anims.stop("walk", true);
     // this.timer.pause();
   }
 
@@ -190,10 +193,7 @@ export class Ghost extends TurningObject {
       ease: "Linear",
       duration: 300,
       delay: delay,
-      alpha: {
-        getStart: () => 1,
-        getEnd: () => 0
-      }
+      alpha: 0
     });
     const fadeIn = this.scene.add
       .tween({
@@ -201,10 +201,7 @@ export class Ghost extends TurningObject {
         ease: "Linear",
         duration: 300,
         delay: delay,
-        alpha: {
-          getStart: () => 1,
-          getEnd: () => 0
-        }
+        alpha: 0
       })
       .stop();
     // fadeOut.onComplete.addOnce(() => {
@@ -256,10 +253,50 @@ export class Ghost extends TurningObject {
    * Inits object animations.
    */
   private setAnimations() {
-    // this.animations.add("walk", [0, 1, 2, 3, 4, 5, 6, 7], 4, true);
-    // this.animations.add("bored", [8, 9], 4, true);
-    // this.animations.add("prenormal", [8, 9, 10, 11], 4, true);
-    // this.animations.add("dead", [12, 13, 14, 15], 4, true);
+    if (!this.scene.anims.get("walk")) {
+      this.scene.anims.create({
+        key: "walk",
+        frames: this.scene.anims.generateFrameNumbers(this.name, {
+          start: 0,
+          end: 7
+        }),
+        frameRate: 4,
+        repeat: -1
+      });
+    }
+    if (!this.scene.anims.get("bored")) {
+      this.scene.anims.create({
+        key: "bored",
+        frames: this.scene.anims.generateFrameNumbers(this.name, {
+          start: 8,
+          end: 9
+        }),
+        frameRate: 4,
+        repeat: -1
+      });
+    }
+    if (!this.scene.anims.get("prenormal")) {
+      this.scene.anims.create({
+        key: "prenormal",
+        frames: this.scene.anims.generateFrameNumbers(this.name, {
+          start: 8,
+          end: 11
+        }),
+        frameRate: 4,
+        repeat: -1
+      });
+    }
+    if (!this.scene.anims.get("dead")) {
+      this.scene.anims.create({
+        key: "dead",
+        frames: this.scene.anims.generateFrameNumbers(this.name, {
+          start: 12,
+          end: 15
+        }),
+        frameRate: 4,
+        repeat: -1
+      });
+    }
   }
 
   /**

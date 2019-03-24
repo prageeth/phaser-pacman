@@ -32,7 +32,12 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
   /**
    * Opposite direction map.
    */
-  opposites = [Phaser.NONE, Phaser.RIGHT, Phaser.LEFT, Phaser.DOWN, Phaser.UP];
+  opposites = {
+    [Phaser.LEFT]: Phaser.RIGHT,
+    [Phaser.RIGHT]: Phaser.LEFT,
+    [Phaser.DOWN]: Phaser.UP,
+    [Phaser.UP]: Phaser.DOWN
+  };
 
   alive = true;
 
@@ -97,25 +102,25 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    * @param index - layer index.
    */
   updateSensor(map: Phaser.Tilemaps.Tilemap, index: number) {
-    this.directions[1] = map.getTileAt(
+    this.directions[Phaser.LEFT] = map.getTileAt(
       this.marker.x - 1,
       this.marker.y,
       false,
       index
     );
-    this.directions[2] = map.getTileAt(
+    this.directions[Phaser.RIGHT] = map.getTileAt(
       this.marker.x + 1,
       this.marker.y,
       false,
       index
     );
-    this.directions[3] = map.getTileAt(
+    this.directions[Phaser.UP] = map.getTileAt(
       this.marker.x,
       this.marker.y - 1,
       false,
       index
     );
-    this.directions[4] = map.getTileAt(
+    this.directions[Phaser.DOWN] = map.getTileAt(
       this.marker.x,
       this.marker.y + 1,
       false,
@@ -128,15 +133,11 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    * @param turnTo - movement direction.
    */
   checkDirection(turnTo: number) {
-    if (
-      this.turning === turnTo ||
-      !this.directions[turnTo] ||
-      this.directions[turnTo].index !== -1
-    ) {
+    if (this.turning === turnTo || this.directions[turnTo]) {
       return;
     }
 
-    if (this.current === this.opposites[turnTo]) {
+    if (this.current === this.opposites[`${turnTo}`]) {
       this.move(turnTo);
     } else {
       this.turning = turnTo;

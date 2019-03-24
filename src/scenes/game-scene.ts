@@ -516,10 +516,7 @@ class GameScene extends Phaser.Scene {
         ease: "Linear",
         duration: 300,
         delay: 0,
-        alpha: {
-          getStart: () => 0,
-          getEnd: () => 1
-        }
+        alpha: 0
       })
       .stop();
     this.notificationOut = this.add
@@ -528,10 +525,7 @@ class GameScene extends Phaser.Scene {
         ease: "Linear",
         duration: 300,
         delay: 0,
-        alpha: {
-          getStart: () => 1,
-          getEnd: () => 0
-        }
+        alpha: 0
       })
       .stop();
 

@@ -11,7 +11,6 @@ export class Pacman extends TurningObject {
   sfx: SFX;
 
   private started = false;
-  private startFrame = 0;
   private powerTimer: Phaser.Time.TimerEvent;
   private afterStartFn: Function;
 
@@ -114,12 +113,12 @@ export class Pacman extends TurningObject {
   die() {
     super.die();
 
-    // this.stop();
+    this.stop();
     // this.scale.x = this.scaleSize;
-    // this.angle = 0;
-    // this.sfx.munch.stop();
-    // this.play('die');
-    // this.sfx.death.play();
+    this.angle = 0;
+    this.sfx.munch.stop();
+    this.play("die");
+    this.sfx.death.play();
   }
 
   /**
@@ -135,13 +134,45 @@ export class Pacman extends TurningObject {
    * Inits object animations.
    */
   private setAnimations() {
-    // this.animations.add('munch', [0, 1, 2, 1, 0], 15, true);
-    // const die = this.animations.add('die', [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13], 10, false);
-    // die.onComplete.add(() => {
-    //   this.visible = false;
-    //   this.frame = this.startFrame;
-    //   this.respawn();
-    // });
+    if (!this.scene.anims.get("munch")) {
+      this.scene.anims.create({
+        key: "munch",
+        frames: [
+          ...this.scene.anims.generateFrameNumbers("pacman", {
+            start: 0,
+            end: 2
+          }),
+          ...this.scene.anims.generateFrameNumbers("pacman", {
+            start: 1,
+            end: 0
+          })
+        ],
+        frameRate: 15,
+        repeat: -1
+      });
+    }
+    if (!this.scene.anims.get("die")) {
+      this.scene.anims.create({
+        key: "die",
+        frames: this.scene.anims.generateFrameNumbers("pacman", {
+          start: 2,
+          end: 13
+        }),
+        frameRate: 10,
+        repeat: 0
+      });
+      this.on(
+        "animationcomplete",
+        (animation, frame) => {
+          if (animation.key === "die") {
+            this.visible = false;
+            this.frame = animation.frames[0];
+            this.respawn();
+          }
+        },
+        this
+      );
+    }
   }
 
   /**
