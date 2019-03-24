@@ -14,9 +14,8 @@ export class Pill extends Phaser.GameObjects.Sprite {
    * Setup object physics.
    */
   setupPhysics() {
-    // this.physics.enable(this);
+    this.scene.physics.world.enable(this);
     this.body.setSize(16, 16, 0, 0);
     this.body.immovable = true;
-    // this.anchor.set(0.5);
   }
 }

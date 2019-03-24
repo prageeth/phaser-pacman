@@ -62,21 +62,23 @@ export class Pacman extends TurningObject {
   enablePowerMode(time: number, onStart: Function, onEnd: Function) {
     if (this.mode === "power") {
       // If already in power mode increase time.
-      // time += this.scene.time.events.duration;
-      // this.powerTimer.timer.destroy();
+      time += this.powerTimer.elapsed;
+      this.powerTimer.destroy();
     } else {
       this.mode = "power";
     }
 
     onStart();
 
-    // this.powerTimer = this.game.time.events.add(time, () => {
-    //   this.disablePowerMode();
-    // });
-
-    // this.powerTimer.timer.onComplete.add(() => {
-    //   onEnd();
-    // });
+    this.powerTimer = this.scene.time.delayedCall(
+      time,
+      (onEnd: Function) => {
+        this.disablePowerMode();
+        onEnd && onEnd();
+      },
+      [onEnd],
+      this
+    );
   }
 
   /**

@@ -4,6 +4,7 @@ import GameScalePlugin from "phaser-plugin-game-scale";
 import { PacmanGame } from "./pacman-game";
 
 const config = {
+  title: "PacMan",
   type: Phaser.AUTO,
   parent: "phaser-game",
   antialias: false, // for pixelated graphics

@@ -27,7 +27,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
   /**
    * Current surrounding map.
    */
-  directions = [null, null, null, null, null];
+  directions = [];
 
   /**
    * Opposite direction map.
@@ -72,8 +72,9 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
     this.respawnPoint.y = y;
     this.currentSpeed = speed;
 
+    this.scene.add.existing(this);
     this.setupPhysics();
-    // this.physics.world.add(this);
+    this.scene.physics.world.add(this.body);
   }
 
   /**
@@ -215,9 +216,14 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    */
   respawn() {
     this.stop();
-    // this.reset(this.respawnPoint.x, this.respawnPoint.y);
+    this.reset(this.respawnPoint.x, this.respawnPoint.y);
     this.body.x = this.x;
     this.body.y = this.y;
+  }
+
+  reset(x: number, y: number) {
+    this.x = x;
+    this.y = y;
     this.alive = true;
     this.visible = true;
   }
@@ -260,7 +266,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
       y = targetY - this.tileSize / 2;
     }
 
-    // this.reset(x, y);
+    this.reset(x, y);
     this.move(this.current);
   }
 
@@ -271,7 +277,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
     // this.anchor.set(0.5);
     // this.scale.set(this.scaleSize);
 
-    this.scene.physics.world.enable([this]);
+    this.scene.physics.world.enable(this);
     this.body.setSize(
       this.tileSize / 2,
       this.tileSize / 2,

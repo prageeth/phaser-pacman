@@ -24,7 +24,7 @@ export class Portal extends Phaser.GameObjects.Sprite {
    * Setup object physics.
    */
   setupPhysics() {
-    // this.physics.arcade.enable(this);
+    this.scene.physics.world.enable(this);
     this.body.setSize(this.width, this.height, 0, 0);
     this.body.immovable = true;
   }

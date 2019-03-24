@@ -18,7 +18,7 @@ export class Ghost extends TurningObject {
   private homeMarker = new Phaser.Geom.Point();
   private recoverMode: GhostMode;
   private waveCount = 0;
-  private timer: Phaser.Time.Clock = this.scene.time;
+  private timer: Phaser.Time.TimerEvent;
 
   constructor(
     scene: GameScene,
@@ -177,7 +177,6 @@ export class Ghost extends TurningObject {
    * Ghost game start hook.
    */
   onStart() {
-    this.initTimer();
     this.inGame = true;
     this.enableScatterMode();
     this.move(Phaser.LEFT);
@@ -188,30 +187,29 @@ export class Ghost extends TurningObject {
    * @param delay - milliseconds.
    */
   escapeFromHome(delay: number) {
+    const fadeIn = this.scene.add.tween({
+      targets: [this],
+      ease: "Linear",
+      duration: 300,
+      delay: delay,
+      alpha: 0,
+      onComplete: () => {
+        this.onStart();
+        this.sfx.regenerate.play();
+      }
+    });
+    fadeIn.stop();
     const fadeOut = this.scene.add.tween({
       targets: [this],
       ease: "Linear",
       duration: 300,
       delay: delay,
-      alpha: 0
+      alpha: 0,
+      onComplete: () => {
+        this.reset(this.home.x, this.home.y);
+        fadeIn.restart();
+      }
     });
-    const fadeIn = this.scene.add
-      .tween({
-        targets: [this],
-        ease: "Linear",
-        duration: 300,
-        delay: delay,
-        alpha: 0
-      })
-      .stop();
-    // fadeOut.onComplete.addOnce(() => {
-    //   this.reset(this.home.x, this.home.y);
-    //   fadeIn.start();
-    // });
-    // fadeIn.onComplete.addOnce(() => {
-    //   this.onStart();
-    //   this.sfx.regenerate.play();
-    // });
   }
 
   /**
@@ -222,7 +220,6 @@ export class Ghost extends TurningObject {
       if (point && point.index === -1 && i !== this.opposites[this.current]) {
         indexes.push(i);
       }
-
       return indexes;
     }, []);
   }
@@ -232,21 +229,32 @@ export class Ghost extends TurningObject {
    * @param posibilities - possible directions.
    */
   private chooseDirection(posibilities: number[]): number {
-    // const sorted = posibilities.slice().sort((a: number, b: number) => {
-    //   return (
-    //     Phaser.Math.Distance.Between(this.directions[a], this.target) -
-    //     Phaser.Geom.Point.distance(this.directions[b], this.target)
-    //   );
-    // });
+    const sorted = posibilities.slice().sort((a: number, b: number) => {
+      const tileA = this.directions[a];
+      const tileB = this.directions[b];
+      return (
+        Phaser.Math.Distance.Between(
+          tileA.x,
+          tileA.y,
+          this.target.x,
+          this.target.y
+        ) -
+        Phaser.Math.Distance.Between(
+          tileB.x,
+          tileB.y,
+          this.target.x,
+          this.target.y
+        )
+      );
+    });
 
-    // // Random choose mode.
-    // if (this.mode === "frightened") {
-    //   return sorted[this.game.rnd.integerInRange(0, sorted.length - 1)];
-    // }
+    // Random choose mode.
+    if (this.mode === "frightened") {
+      return sorted[Phaser.Math.Between(0, sorted.length - 1)];
+    }
 
     // Closests to target.
-    // return sorted.shift();
-    return 1;
+    return sorted.shift();
   }
 
   /**
@@ -310,14 +318,6 @@ export class Ghost extends TurningObject {
   }
 
   /**
-   * Setup new mode timer.
-   */
-  private initTimer() {
-    // this.timer.destroy();
-    // this.timer = this.game.time.create(false);
-  }
-
-  /**
    * Gets mode duration.
    */
   private getWaveDuration(): number {
@@ -340,14 +340,18 @@ export class Ghost extends TurningObject {
 
     const duration = this.getWaveDuration();
 
-    // if (duration) {
-    //   this.timer.add(duration, () => {
-    //     this.enableChaseMode();
-    //     this.onModeSwitch();
-    //   });
-
-    //   this.timer.start();
-    // }
+    if (duration) {
+      this.timer && this.timer.destroy();
+      this.timer = this.scene.time.delayedCall(
+        duration,
+        () => {
+          this.enableChaseMode();
+          this.onModeSwitch();
+        },
+        [],
+        this
+      );
+    }
   }
 
   /**
@@ -366,10 +370,16 @@ export class Ghost extends TurningObject {
     if (duration) {
       this.waveCount++;
 
-      // this.timer.add(duration, () => {
-      //   this.enableScatterMode();
-      //   this.onModeSwitch();
-      // });
+      this.timer && this.timer.destroy();
+      this.timer = this.scene.time.delayedCall(
+        duration,
+        () => {
+          this.enableScatterMode();
+          this.onModeSwitch();
+        },
+        [],
+        this
+      );
     }
   }
 

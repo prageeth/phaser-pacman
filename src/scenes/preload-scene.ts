@@ -46,7 +46,7 @@ class PreloadScene extends Phaser.Scene {
       frameWidth: this.tileSize,
       frameHeight: this.tileSize
     });
-    this.load.spritesheet("pacman", "../assets/sprites/pacman.png", {
+    this.load.spritesheet("pacman", "assets/sprites/pacman.png", {
       frameWidth: this.tileSize,
       frameHeight: this.tileSize
     });

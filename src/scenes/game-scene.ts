@@ -63,7 +63,7 @@ class GameScene extends Phaser.Scene {
     this.onPowerModeEnd = this.onPowerModeEnd.bind(this);
   }
 
-  init({level = 1, lifes = 3, score = 0}) {
+  init({ level = 1, lifes = 3, score = 0 }) {
     this.level = level;
     this.lifes = lifes;
     this.score = score;
@@ -135,9 +135,9 @@ class GameScene extends Phaser.Scene {
     this.physics.overlap(this.pacman, this.pills, this.powerMode, null, this);
     this.physics.overlap(this.pacman, this.ghosts, this.meetGhost, null, this);
 
-    // Upgates objects positions.
+    // Updates objects positions.
     this.ghostsDo((ghost: Ghost) => {
-      // ghost.updatePosition(this.map, this.wallsLayer.index);
+      ghost.updatePosition(this.map, this.wallsLayer.layerIndex);
       ghost.updateTarget(this.pacman.marker);
     });
 
@@ -253,7 +253,6 @@ class GameScene extends Phaser.Scene {
    */
   createPacman() {
     const respawn = getRespawnPoint("pacman", this.map);
-
     this.pacman = new Pacman(
       this,
       respawn.x,
@@ -261,7 +260,6 @@ class GameScene extends Phaser.Scene {
       this.tileSize,
       this.difficlty.pacmanSpeed
     );
-
     this.pacman.afterStart(() => this.afterPacmanRun());
   }
 
@@ -271,9 +269,9 @@ class GameScene extends Phaser.Scene {
   afterPacmanRun() {
     this.sfx.intro.stop();
     this.blinky.onStart();
-    this.pinky.escapeFromHome(800);
-    this.inky.escapeFromHome(1000);
-    this.clyde.escapeFromHome(1200);
+    this.pinky.escapeFromHome(8000);
+    this.inky.escapeFromHome(10000);
+    this.clyde.escapeFromHome(12000);
   }
 
   /**
@@ -494,8 +492,8 @@ class GameScene extends Phaser.Scene {
     //this.world.centerX
     this.scoreBtm = new Phaser.GameObjects.BitmapText(
       this,
-      400,
-      16,
+      200,
+      100,
       "kong",
       text,
       16
@@ -540,7 +538,7 @@ class GameScene extends Phaser.Scene {
    */
   private updateScore(points: number) {
     this.score += points * this.multi;
-    this.scoreBtm.text = `${this.score}`;
+    this.scoreBtm.setText(`${this.score}`);
   }
 
   /**
@@ -647,7 +645,7 @@ class GameScene extends Phaser.Scene {
     this.ghosts.add(this[name]);
   }
 
-  private ghostsDo(callback) {
+  private ghostsDo(callback: Function) {
     this.ghosts.getChildren().forEach(ghost => callback(ghost as Ghost));
   }
 }
