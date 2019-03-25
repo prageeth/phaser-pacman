@@ -1,7 +1,6 @@
-import { GameScene } from "../scenes";
+import { TurningObject } from "./turning";
 import { PacmanMode } from "../interfaces/pacman";
 import { SFX } from "../interfaces/game";
-import { TurningObject } from "./turning";
 
 /**
  * Pacman hero.
@@ -15,13 +14,13 @@ export class Pacman extends TurningObject {
   private afterStartFn: Function;
 
   constructor(
-    scene: GameScene,
+    scene: Phaser.Scene,
     x: number,
     y: number,
     tileSize: number,
     speed: number
   ) {
-    super(scene, x, y, "pacman", 0, tileSize, speed, scene.tileSize / 2);
+    super(scene, x, y, "pacman", 0, tileSize, speed, tileSize / 2);
 
     this.setAnimations();
     this.setSFX();
@@ -143,7 +142,7 @@ export class Pacman extends TurningObject {
     if (!this.scene.anims.get("resting")) {
       this.scene.anims.create({
         key: "resting",
-        frames: [{key: "pacman", frame: 1}],
+        frames: [{ key: "pacman", frame: 1 }],
         frameRate: 15,
         repeat: -1
       });

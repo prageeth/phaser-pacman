@@ -59,26 +59,11 @@ class PreloadScene extends Phaser.Scene {
     );
 
     // Audio.
-    this.load.audio("intro", [
-      "assets/sfx/intro.mp3",
-      "assets/sfx/intro.ogg"
-    ]);
-    this.load.audio("over", [
-      "assets/sfx/over.mp3",
-      "assets/sfx/over.ogg"
-    ]);
-    this.load.audio("win", [
-      "assets/sfx/win.mp3",
-       "assets/sfx/win.ogg"
-    ]);
-    this.load.audio("munch", [
-      "assets/sfx/munch.mp3",
-      "assets/sfx/munch.ogg"
-    ]);
-      this.load.audio("fruit", [
-      "assets/sfx/fruit.mp3",
-      "assets/sfx/fruit.ogg"
-    ]);
+    this.load.audio("intro", ["assets/sfx/intro.mp3", "assets/sfx/intro.ogg"]);
+    this.load.audio("over", ["assets/sfx/over.mp3", "assets/sfx/over.ogg"]);
+    this.load.audio("win", ["assets/sfx/win.mp3", "assets/sfx/win.ogg"]);
+    this.load.audio("munch", ["assets/sfx/munch.mp3", "assets/sfx/munch.ogg"]);
+    this.load.audio("fruit", ["assets/sfx/fruit.mp3", "assets/sfx/fruit.ogg"]);
     this.load.audio("intermission", [
       "assets/sfx/intermission.mp3",
       "assets/sfx/intermission.ogg"
@@ -87,14 +72,8 @@ class PreloadScene extends Phaser.Scene {
       "assets/sfx/regenerate.mp3",
       "assets/sfx/regenerate.ogg"
     ]);
-    this.load.audio("ghost", [
-      "assets/sfx/ghost.mp3",
-      "assets/sfx/ghost.ogg"
-    ]);
-    this.load.audio("death", [
-      "assets/sfx/death.mp3",
-      "assets/sfx/death.ogg"
-    ]);
+    this.load.audio("ghost", ["assets/sfx/ghost.mp3", "assets/sfx/ghost.ogg"]);
+    this.load.audio("death", ["assets/sfx/death.mp3", "assets/sfx/death.ogg"]);
   }
 
   create() {

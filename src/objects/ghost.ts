@@ -1,6 +1,5 @@
-import { GameScene } from "../scenes";
-import { Wave, SFX } from "../interfaces/game";
 import { TurningObject } from "./turning";
+import { Wave, SFX } from "../interfaces/game";
 import { GhostMode } from "../interfaces/ghost";
 
 /**
@@ -21,7 +20,7 @@ export class Ghost extends TurningObject {
   private timer: Phaser.Time.TimerEvent;
 
   constructor(
-    scene: GameScene,
+    scene: Phaser.Scene,
     x: number,
     y: number,
     key: string,

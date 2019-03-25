@@ -1,5 +1,3 @@
-import { GameScene } from "../scenes";
-
 export interface PortalProps {
   i: number;
   target: number;
@@ -10,14 +8,15 @@ export interface PortalProps {
  */
 export class Portal extends Phaser.GameObjects.Sprite {
   constructor(
-    scene: GameScene,
+    scene: Phaser.Scene,
     x: number,
     y: number,
+    tileSize: number,
     public width: number,
     public height: number,
     public props: PortalProps
   ) {
-    super(scene, x - scene.tileSize, y, null);
+    super(scene, x - tileSize, y, null);
 
     this.setOrigin(0, 0.5);
 

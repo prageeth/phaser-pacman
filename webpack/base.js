@@ -10,7 +10,14 @@ const phaser = path.join(phaserModule, "dist/phaser.js");
 module.exports = {
   mode: "development",
   devtool: "eval-source-map",
-  entry: "./src/index.ts",
+  entry: {
+    index: "./src/index.ts",
+    demo: "./src/demo/index.ts"
+  },
+  output: {
+    path: path.resolve(__dirname, "../dist"),
+    filename: "[name].js"
+  },
   module: {
     rules: [
       {
@@ -54,6 +61,7 @@ module.exports = {
       WEBGL_RENDERER: JSON.stringify(true)
     }),
     new HtmlWebpackPlugin({
+      inject: false,
       template: "./index.html"
     }),
     new CopyWebpackPlugin([{ from: "./src/assets", to: "assets" }])

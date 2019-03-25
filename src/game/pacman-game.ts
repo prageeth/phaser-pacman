@@ -1,4 +1,3 @@
-// import Phaser from "phaser";
 import { GameDifficulty, SFX } from "../interfaces/game";
 import { GhostName } from "../interfaces/ghost";
 import { difficulty } from "../config/difficulty";
@@ -8,24 +7,31 @@ import { Pellet } from "../objects/pellet";
 import { Portal } from "../objects/portal";
 import { Pacman } from "../objects/pacman";
 import { Ghost } from "../objects/ghost";
-import { SceneNames } from "./names";
+
 import {
   getObjectsByType,
   getRespawnPoint,
   getTargetPoint
 } from "../utils/helpers/tilemap";
 
+import {
+  ResetParams,
+  ShouldRestartFunction,
+  CheckControlsFunction
+} from "./types";
+
 /**
  * Main game state.
  */
-class GameScene extends Phaser.Scene {
+class PacmanGame {
+  scene: Phaser.Scene;
   map: Phaser.Tilemaps.Tilemap;
   bgLayer: Phaser.Tilemaps.StaticTilemapLayer;
   wallsLayer: Phaser.Tilemaps.StaticTilemapLayer;
   active: boolean;
   score: number;
   multi: number;
-  lifes: number;
+  lives: number;
   level: number;
   difficlty: GameDifficulty;
   pellets: Phaser.GameObjects.Group;
@@ -40,9 +46,6 @@ class GameScene extends Phaser.Scene {
   inky: Ghost;
   clyde: Ghost;
 
-  controls: Phaser.Input.Keyboard.CursorKeys;
-  spaceKey: Phaser.Input.Keyboard.Key;
-
   sfx: SFX;
 
   tileSize: number;
@@ -50,36 +53,38 @@ class GameScene extends Phaser.Scene {
   private tilesetWalls: Phaser.Tilemaps.Tileset;
 
   private interface: Phaser.GameObjects.Group;
-  private lifesArea: Phaser.GameObjects.Sprite[] = [];
+  private livesArea: Phaser.GameObjects.Sprite[] = [];
   private scoreBtm: Phaser.GameObjects.BitmapText;
   private notification: Phaser.GameObjects.BitmapText;
   private notificationIn: Phaser.Tweens.Tween;
   private notificationOut: Phaser.Tweens.Tween;
 
-  constructor() {
-    super({ key: SceneNames.GAME });
+  private playSounds: boolean;
 
-    this.tileSize = 16;
-
-    this.onPowerModeStart = this.onPowerModeStart.bind(this);
-    this.onPowerModeEnd = this.onPowerModeEnd.bind(this);
+  constructor(scene: Phaser.Scene, tileSize: number = 16, playSounds: boolean) {
+    this.scene = scene;
+    this.tileSize = tileSize;
+    this.playSounds = playSounds;
   }
 
-  init({ level = 1, lifes = 3, score = 0 }) {
+  reset({ level = 1, lives = 3, score = 0 }: ResetParams) {
     this.level = level;
-    this.lifes = lifes;
+    this.lives = lives;
     this.score = score;
     this.difficlty = difficulty[this.level - 1];
     this.multi = this.difficlty.multiplier;
     this.active = true;
   }
 
-  create() {
+  preload() {
+    // TODO
+  }
+
+  init() {
     this.setTiles();
     this.initLayers();
     this.resizeMap();
     this.enablePhysics();
-    this.setControls();
 
     this.createPortals();
     this.createPellets();
@@ -91,22 +96,22 @@ class GameScene extends Phaser.Scene {
     this.initUI();
     this.initSfx();
 
-    this.sfx.intro.play();
+    this.playSfx("intro");
   }
 
-  update() {
+  update(
+    shouldRestart: ShouldRestartFunction,
+    checkControls: CheckControlsFunction
+  ) {
     // Check if game is active.
     if (!this.active) {
-      this.ghosts.getChildren().forEach(ghost => (ghost as Ghost).stop());
+      this.ghostsDo((ghost: Ghost) => ghost.stop());
       this.pacman.stop();
 
       // Restarts state on win/game over or Pacman death.
-      if (
-        (this.spaceKey && this.spaceKey.isDown) ||
-        (this.input.pointer1 && this.input.pointer1.isDown)
-      ) {
+      if (shouldRestart()) {
         // Game over.
-        if (this.lifes === 0) {
+        if (this.lives === 0) {
           // this.scene.start("Game", true, false);
         } else if (this.level <= 3) {
           // Next level.
@@ -115,7 +120,7 @@ class GameScene extends Phaser.Scene {
           //   true,
           //   false,
           //   this.level,
-          //   this.lifes + 1,
+          //   this.lives + 1,
           //   this.score
           // );
         } else {
@@ -127,16 +132,58 @@ class GameScene extends Phaser.Scene {
     }
 
     // Checks collisions.
-    this.physics.collide(this.pacman, this.wallsLayer, this.pacmanHitWall, null, this);
-    this.physics.collide(this.ghosts, this.wallsLayer);
+    this.scene.physics.collide(
+      this.pacman,
+      this.wallsLayer,
+      this.pacmanHitWall,
+      null,
+      this
+    );
+    this.scene.physics.collide(this.ghosts, this.wallsLayer);
 
     // Checks overlappings.
-    this.physics.overlap(this.ghosts, this.portals, this.teleport, null, this);
-    this.physics.overlap(this.pacman, this.portals, this.teleport, null, this);
-    this.physics.overlap(this.pacman, this.pellets, this.collect, null, this);
-    this.physics.overlap(this.pacman, this.bonuses, this.bonus, null, this);
-    this.physics.overlap(this.pacman, this.pills, this.powerMode, null, this);
-    this.physics.overlap(this.pacman, this.ghosts, this.meetGhost, null, this);
+    this.scene.physics.overlap(
+      this.ghosts,
+      this.portals,
+      this.teleport,
+      null,
+      this
+    );
+    this.scene.physics.overlap(
+      this.pacman,
+      this.portals,
+      this.teleport,
+      null,
+      this
+    );
+    this.scene.physics.overlap(
+      this.pacman,
+      this.pellets,
+      this.collect,
+      null,
+      this
+    );
+    this.scene.physics.overlap(
+      this.pacman,
+      this.bonuses,
+      this.bonus,
+      null,
+      this
+    );
+    this.scene.physics.overlap(
+      this.pacman,
+      this.pills,
+      this.powerMode,
+      null,
+      this
+    );
+    this.scene.physics.overlap(
+      this.pacman,
+      this.ghosts,
+      this.meetGhost,
+      null,
+      this
+    );
 
     this.pacman.updatePosition(this.map, this.wallsLayer.layerIndex);
 
@@ -155,34 +202,15 @@ class GameScene extends Phaser.Scene {
     //   });
     // }
 
-    this.checkControls();
-  }
-
-  /**
-   * Update controls handler.
-   */
-  checkControls() {
-    this.keyboardControls();
-
-    if (this.pacman.turning !== Phaser.NONE) {
-      this.pacman.turn();
-    }
-  }
-
-  /**
-   * Keyboard handler.
-   */
-  keyboardControls() {
-    if (this.controls.left.isDown) {
-      this.pacman.onControls(Phaser.LEFT);
-    } else if (this.controls.right.isDown) {
-      this.pacman.onControls(Phaser.RIGHT);
-    } else if (this.controls.up.isDown) {
-      this.pacman.onControls(Phaser.UP);
-    } else if (this.controls.down.isDown) {
-      this.pacman.onControls(Phaser.DOWN);
+    const { direction } = checkControls();
+    if (direction) {
+      this.pacman.onControls(direction);
     } else {
       this.pacman.turning = Phaser.NONE;
+    }
+
+    if (direction && direction !== Phaser.NONE) {
+      this.pacman.turn();
     }
   }
 
@@ -190,14 +218,22 @@ class GameScene extends Phaser.Scene {
    * Inits map portals.
    */
   createPortals() {
-    this.portals = this.add.group();
+    this.portals = this.scene.add.group();
     // this.portals.enableBody = true;
 
     const portals = getObjectsByType("portal", this.map, "objects");
 
     portals.forEach(p => {
       this.portals.add(
-        new Portal(this, p.x, p.y, p.width, p.height, p.properties)
+        new Portal(
+          this.scene,
+          p.x,
+          p.y,
+          this.tileSize,
+          p.width,
+          p.height,
+          p.properties
+        )
       );
     });
   }
@@ -206,15 +242,13 @@ class GameScene extends Phaser.Scene {
    * Inits pellets.
    */
   createPellets() {
-    this.pellets = this.add.group();
-    this.physics.world.enable(this.pellets);
+    this.pellets = this.scene.add.group();
+    this.scene.physics.world.enable(this.pellets);
 
     const pellets = getObjectsByType("pillow", this.map, "objects");
 
     pellets.forEach(p => {
-      this.pellets.add(
-        new Pellet(this, p.x, p.y)
-      );
+      this.pellets.add(new Pellet(this.scene, p.x, p.y, this.tileSize));
     });
   }
 
@@ -223,21 +257,21 @@ class GameScene extends Phaser.Scene {
    */
   createBonuses() {
     // bonuses
-    this.bonuses = this.add.group();
-    this.physics.world.enable(this.bonuses);
+    this.bonuses = this.scene.add.group();
+    this.scene.physics.world.enable(this.bonuses);
   }
 
   /**
    * Inits pills.
    */
   createPills() {
-    this.pills = this.add.group();
-    this.physics.world.enable(this.pills);
+    this.pills = this.scene.add.group();
+    this.scene.physics.world.enable(this.pills);
 
     const pills = getObjectsByType("pill", this.map, "objects");
 
     pills.forEach(p => {
-      this.pills.add(new Pill(this, p.x, p.y));
+      this.pills.add(new Pill(this.scene, p.x, p.y));
     });
   }
 
@@ -245,7 +279,7 @@ class GameScene extends Phaser.Scene {
    * Inits Ghosts.
    */
   createGhosts() {
-    this.ghosts = this.add.group();
+    this.ghosts = this.scene.add.group();
     // this.ghosts.enableBody = true;
     this.ghostsHome = getRespawnPoint("blinky", this.map);
 
@@ -261,7 +295,7 @@ class GameScene extends Phaser.Scene {
   createPacman() {
     const respawn = getRespawnPoint("pacman", this.map);
     this.pacman = new Pacman(
-      this,
+      this.scene,
       respawn.x,
       respawn.y,
       this.tileSize,
@@ -291,9 +325,9 @@ class GameScene extends Phaser.Scene {
    * @param portal - portal object.
    */
   teleport(unit: Pacman | Ghost, portal: Portal) {
-    const { x, y, width, height } = this.portals.getChildren().filter(
-      (p: Portal) => p.props.i === portal.props.target
-    )[0] as Portal;
+    const { x, y, width, height } = this.portals
+      .getChildren()
+      .filter((p: Portal) => p.props.i === portal.props.target)[0] as Portal;
     unit.teleport(portal.x, portal.y, x, y, width, height);
   }
 
@@ -365,7 +399,7 @@ class GameScene extends Phaser.Scene {
 
     this.multi = this.multi * amount;
 
-    this.time.addEvent({
+    this.scene.time.addEvent({
       delay: 3000,
       callbackScope: this,
       callback: () => {
@@ -392,19 +426,19 @@ class GameScene extends Phaser.Scene {
   /**
    * Pacman power mode start hook.
    */
-  onPowerModeStart() {
+  onPowerModeStart = () => {
     this.sfx.intermission.play();
     this.ghostsDo((ghost: Ghost) => ghost.enableSensetiveMode());
-  }
+  };
 
   /**
    * Pacman power mode end hook.
    */
-  onPowerModeEnd() {
+  onPowerModeEnd = () => {
     this.sfx.intermission.stop();
     this.sfx.regenerate.play();
     this.ghostsDo((ghost: Ghost) => ghost.disableSensetiveMode());
-  }
+  };
 
   /**
    * Ghost overlap handler.
@@ -427,7 +461,7 @@ class GameScene extends Phaser.Scene {
       this.updateLifes(-1);
 
       // Game over.
-      if (this.lifes === 0) {
+      if (this.lives === 0) {
         pacman.sfx.munch.stop();
         this.sfx.over.play();
         this.active = false;
@@ -444,7 +478,7 @@ class GameScene extends Phaser.Scene {
    * Creates map.
    */
   private setTiles() {
-    this.map = this.add.tilemap("level");
+    this.map = this.scene.add.tilemap("level");
     this.tilesetWalls = this.map.addTilesetImage("walls", "walls");
     this.map.setCollisionBetween(1, 33, true, true, "walls");
   }
@@ -468,7 +502,7 @@ class GameScene extends Phaser.Scene {
    */
   private placeBonus(name: "string") {
     const rndPoint = this.getRandomPelletPosition();
-    // this.add.sprite(rndPoint.x, rndPoint.y, name, 0, this.bonuses);
+    // this.scene.add.sprite(rndPoint.x, rndPoint.y, name, 0, this.bonuses);
   }
 
   /**
@@ -490,19 +524,19 @@ class GameScene extends Phaser.Scene {
    * Enables physics.
    */
   private enablePhysics() {
-    this.physics.resume();
+    // this.scene.physics.resume();
   }
 
   /**
    * Creates user interface.
    */
   private initUI() {
-    this.interface = this.add.group();
+    this.interface = this.scene.add.group();
 
     const text = this.score === 0 ? "00" : `${this.score}`;
     //this.world.centerX
     this.scoreBtm = new Phaser.GameObjects.BitmapText(
-      this,
+      this.scene,
       200,
       100,
       "kong",
@@ -511,7 +545,7 @@ class GameScene extends Phaser.Scene {
     );
     // this.world.centerX, this.world.centerY + 48
     this.notification = new Phaser.GameObjects.BitmapText(
-      this,
+      this.scene,
       400,
       448,
       "kong",
@@ -519,7 +553,7 @@ class GameScene extends Phaser.Scene {
       16
     );
     this.notification.alpha = 0;
-    this.notificationIn = this.add
+    this.notificationIn = this.scene.add
       .tween({
         targets: [this.notification],
         ease: "Linear",
@@ -528,7 +562,7 @@ class GameScene extends Phaser.Scene {
         alpha: 0
       })
       .stop();
-    this.notificationOut = this.add
+    this.notificationOut = this.scene.add
       .tween({
         targets: [this.notification],
         ease: "Linear",
@@ -557,12 +591,12 @@ class GameScene extends Phaser.Scene {
    * @param amount - number of lifes.
    */
   private updateLifes(amount: number) {
-    this.lifes += amount;
+    this.lives += amount;
 
     // Create if no in UI.
-    if (this.lifesArea.length && this.lifesArea.length > this.lifes) {
-      const life = this.lifesArea.pop();
-      const lifeTween = this.add.tween({
+    if (this.livesArea.length && this.livesArea.length > this.lives) {
+      const life = this.livesArea.pop();
+      const lifeTween = this.scene.add.tween({
         targets: [life],
         ease: "Linear",
         duration: 300,
@@ -577,16 +611,16 @@ class GameScene extends Phaser.Scene {
       let sprite: Phaser.GameObjects.Sprite;
       let prevSprite: Phaser.GameObjects.Sprite;
 
-      // for (let i = 0; i < this.lifes; i++) {
+      // for (let i = 0; i < this.lives; i++) {
       //   if (prevSprite) {
-      //     sprite = this.add
+      //     sprite = this.scene.add
       //       .sprite(0, 0, "pacman", 1)
       //       .alignTo(prevSprite, Phaser.RIGHT_CENTER, 8, 0);
       //   } else {
-      //     sprite = this.add.sprite(8, this.world.bottom - 24, "pacman", 1);
+      //     sprite = this.scene.add.sprite(8, this.world.bottom - 24, "pacman", 1);
       //   }
 
-      //   this.lifesArea.push(sprite);
+      //   this.livesArea.push(sprite);
       //   prevSprite = sprite;
       // }
     }
@@ -614,23 +648,20 @@ class GameScene extends Phaser.Scene {
    */
   private initSfx() {
     this.sfx = {
-      intro: this.sound.add("intro"),
-      over: this.sound.add("over"),
-      win: this.sound.add("win"),
-      fruit: this.sound.add("fruit"),
-      intermission: this.sound.add("intermission"),
-      regenerate: this.sound.add("regenerate")
+      intro: this.scene.sound.add("intro"),
+      over: this.scene.sound.add("over"),
+      win: this.scene.sound.add("win"),
+      fruit: this.scene.sound.add("fruit"),
+      intermission: this.scene.sound.add("intermission"),
+      regenerate: this.scene.sound.add("regenerate")
     };
   }
 
-  /**
-   * Set game controls.
-   */
-  private setControls() {
-    this.spaceKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
-    );
-    this.controls = this.input.keyboard.createCursorKeys();
+  private playSfx(name: string) {
+    if (this.playSounds) {
+      const sfx = this.sfx[name];
+      sfx && sfx.play();
+    }
   }
 
   /**
@@ -642,7 +673,7 @@ class GameScene extends Phaser.Scene {
     const target = getTargetPoint(name, this.map);
 
     this[name] = new Ghost(
-      this,
+      this.scene,
       respawn.x,
       respawn.y,
       name,
@@ -661,4 +692,4 @@ class GameScene extends Phaser.Scene {
   }
 }
 
-export { GameScene };
+export { PacmanGame, ShouldRestartFunction };

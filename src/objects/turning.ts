@@ -1,5 +1,3 @@
-import { GameScene } from "../scenes";
-
 /**
  * Tuning objects base class.
  */
@@ -59,7 +57,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
   private turnPoint = new Phaser.Geom.Point();
 
   constructor(
-    scene: GameScene,
+    scene: Phaser.Scene,
     x: number,
     y: number,
     key: string,
@@ -251,7 +249,14 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    * @param targetX - out portal x.
    * @param targetY -out portal y.
    */
-  teleport(portalX: number, portalY: number, targetX: number, targetY: number, width: number, height: number) {
+  teleport(
+    portalX: number,
+    portalY: number,
+    targetX: number,
+    targetY: number,
+    width: number,
+    height: number
+  ) {
     let x: number;
     let y: number;
 
@@ -296,10 +301,6 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
 
     this.scene.physics.world.enable(this);
     this.scene.physics.world.add(this.body);
-    this.body.setSize(
-      this.tileSize / 2,
-      this.tileSize / 2,
-      true
-    );
+    this.body.setSize(this.tileSize / 2, this.tileSize / 2, true);
   }
 }

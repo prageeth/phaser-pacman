@@ -1,12 +1,16 @@
-import { GameScene } from "../scenes";
-
 /**
  * Collectible object.
  */
 export abstract class Collectible extends Phaser.GameObjects.Sprite {
   key: string;
 
-  constructor(scene: GameScene, x: number, y: number, texture: string, key: string) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    texture: string,
+    key: string
+  ) {
     super(scene, x, y, texture);
 
     this.key = key;

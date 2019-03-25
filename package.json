@@ -2,7 +2,7 @@
   "name": "@prageeths/phaser-pacman",
   "version": "0.0.1",
   "description": "Phaser 3 - Pacman",
-  "main": "src/index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "webpack --config webpack/prod.js ",
     "dev": "webpack --config webpack/base.js",
