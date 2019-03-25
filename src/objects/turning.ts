@@ -22,7 +22,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
   /**
    * Sprite scale number.
    */
-  scaleSize = 1.5;
+  scaleSize = 1;
 
   /**
    * Current surrounding map.
@@ -74,7 +74,6 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
 
     this.scene.add.existing(this);
     this.setupPhysics();
-    this.scene.physics.world.add(this.body);
   }
 
   /**
@@ -274,15 +273,15 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    * Setup object physics.
    */
   private setupPhysics() {
-    // this.anchor.set(0.5);
-    // this.scale.set(this.scaleSize);
+    this.setOrigin(0.5, 0.5);
+    this.setScale(this.scaleSize);
 
     this.scene.physics.world.enable(this);
+    this.scene.physics.world.add(this.body);
     this.body.setSize(
       this.tileSize / 2,
       this.tileSize / 2,
-      this.tileSize / 4,
-      this.tileSize / 4
+      true
     );
   }
 }

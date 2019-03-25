@@ -97,16 +97,20 @@ export class Pacman extends TurningObject {
 
     this.play("munch");
 
-    // this.scale.x = this.scaleSize;
-    // this.angle = 0;
+    this.scaleX = this.scaleSize;
+    this.angle = 0;
 
-    // if (direction === Phaser.LEFT) {
-    //   this.scale.x = -this.scaleSize;
-    // } else if (direction === Phaser.UP) {
-    //   this.angle = 270;
-    // } else if (direction === Phaser.DOWN) {
-    //   this.angle = 90;
-    // }
+    if (direction === Phaser.LEFT) {
+      this.scaleX = -this.scaleSize;
+    } else if (direction === Phaser.UP) {
+      this.angle = 270;
+    } else if (direction === Phaser.DOWN) {
+      this.angle = 90;
+    }
+  }
+
+  stopMoving() {
+    this.play("resting");
   }
 
   /**
@@ -116,7 +120,7 @@ export class Pacman extends TurningObject {
     super.die();
 
     this.stop();
-    // this.scale.x = this.scaleSize;
+    this.scaleX = this.scaleSize;
     this.angle = 0;
     this.sfx.munch.stop();
     this.play("die");
@@ -128,7 +132,7 @@ export class Pacman extends TurningObject {
    */
   respawn() {
     super.respawn();
-
+    this.play("resting");
     this.started = false;
   }
 
@@ -136,6 +140,14 @@ export class Pacman extends TurningObject {
    * Inits object animations.
    */
   private setAnimations() {
+    if (!this.scene.anims.get("resting")) {
+      this.scene.anims.create({
+        key: "resting",
+        frames: [{key: "pacman", frame: 1}],
+        frameRate: 15,
+        repeat: -1
+      });
+    }
     if (!this.scene.anims.get("munch")) {
       this.scene.anims.create({
         key: "munch",

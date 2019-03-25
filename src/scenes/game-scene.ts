@@ -2,7 +2,9 @@
 import { GameDifficulty, SFX } from "../interfaces/game";
 import { GhostName } from "../interfaces/ghost";
 import { difficulty } from "../config/difficulty";
+import { Collectible } from "../objects/collectible";
 import { Pill } from "../objects/pill";
+import { Pellet } from "../objects/pellet";
 import { Portal } from "../objects/portal";
 import { Pacman } from "../objects/pacman";
 import { Ghost } from "../objects/ghost";
@@ -81,6 +83,7 @@ class GameScene extends Phaser.Scene {
 
     this.createPortals();
     this.createPellets();
+    this.createBonuses();
     this.createPills();
     this.createGhosts();
     this.createPacman();
@@ -124,7 +127,7 @@ class GameScene extends Phaser.Scene {
     }
 
     // Checks collisions.
-    this.physics.collide(this.pacman, this.wallsLayer);
+    this.physics.collide(this.pacman, this.wallsLayer, this.pacmanHitWall, null, this);
     this.physics.collide(this.ghosts, this.wallsLayer);
 
     // Checks overlappings.
@@ -204,20 +207,24 @@ class GameScene extends Phaser.Scene {
    */
   createPellets() {
     this.pellets = this.add.group();
-    // this.pellets.enableBody = true;
+    this.physics.world.enable(this.pellets);
 
+    const pellets = getObjectsByType("pillow", this.map, "objects");
+
+    pellets.forEach(p => {
+      this.pellets.add(
+        new Pellet(this, p.x, p.y)
+      );
+    });
+  }
+
+  /**
+   * Inits pellets.
+   */
+  createBonuses() {
+    // bonuses
     this.bonuses = this.add.group();
-    // this.bonuses.enableBody = true;
-
-    // this.map.createFromObjects(
-    //   "objects",
-    //   7,
-    //   "pellet",
-    //   0,
-    //   true,
-    //   false,
-    //   this.pellets
-    // );
+    this.physics.world.enable(this.bonuses);
   }
 
   /**
@@ -225,7 +232,7 @@ class GameScene extends Phaser.Scene {
    */
   createPills() {
     this.pills = this.add.group();
-    // this.pills.enableBody = true;
+    this.physics.world.enable(this.pills);
 
     const pills = getObjectsByType("pill", this.map, "objects");
 
@@ -274,16 +281,20 @@ class GameScene extends Phaser.Scene {
     this.clyde.escapeFromHome(12000);
   }
 
+  pacmanHitWall() {
+    this.pacman.stopMoving();
+  }
+
   /**
    * Portals handler.
    * @param unit - ghost or pacman to teleport.
    * @param portal - portal object.
    */
   teleport(unit: Pacman | Ghost, portal: Portal) {
-    // const { x, y } = this.portals.getChildren().filter(
-    //   p => p.props.i === portal.props.target
-    // ).list[0];
-    // unit.teleport(portal.x, portal.y, x, y);
+    const { x, y } = this.portals.getChildren().filter(
+      (p: Portal) => p.props.i === portal.props.target
+    )[0] as Portal;
+    unit.teleport(portal.x, portal.y, x, y);
   }
 
   /**
@@ -291,7 +302,7 @@ class GameScene extends Phaser.Scene {
    * @param pacman - pacman object.
    * @param item - pill or pellet to collect.
    */
-  collect(pacman: Pacman, item) {
+  collect(pacman: Pacman, item: Collectible) {
     const points =
       {
         pellet: 10,
@@ -299,7 +310,7 @@ class GameScene extends Phaser.Scene {
       }[item.key] || 0;
 
     if (points) {
-      item.kill();
+      item.destroy();
       this.updateScore(points);
     }
 
@@ -321,14 +332,14 @@ class GameScene extends Phaser.Scene {
       this.showNotification(text);
     } else {
       // Bonuses initialization.
-      const eated = `${this.pellets.getChildren().length -
+      const eaten = `${this.pellets.getChildren().length -
         this.pellets.countActive()}`;
 
       const bonusName = {
         "60": "cherry",
         "120": "strawberry",
         "150": "apple"
-      }[eated];
+      }[eaten];
 
       if (bonusName) {
         this.placeBonus(bonusName);
