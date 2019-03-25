@@ -41,6 +41,8 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
 
   alive = true;
 
+  extraPush: number = 10;
+
   /**
    * Currect object speed.
    */
@@ -249,7 +251,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
    * @param targetX - out portal x.
    * @param targetY -out portal y.
    */
-  teleport(portalX: number, portalY: number, targetX: number, targetY: number) {
+  teleport(portalX: number, portalY: number, targetX: number, targetY: number, width: number, height: number) {
     let x: number;
     let y: number;
 
@@ -263,6 +265,22 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
       y = targetY + this.tileSize / 2;
     } else {
       y = targetY - this.tileSize / 2;
+    }
+
+    // give an extra push to get over the blackhole
+    switch (this.current) {
+      case Phaser.LEFT:
+        x -= width;
+        break;
+      case Phaser.RIGHT:
+        x += width;
+        break;
+      case Phaser.UP:
+        y -= height;
+        break;
+      case Phaser.DOWN:
+        y += height;
+        break;
     }
 
     this.reset(x, y);

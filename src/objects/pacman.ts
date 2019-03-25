@@ -21,7 +21,7 @@ export class Pacman extends TurningObject {
     tileSize: number,
     speed: number
   ) {
-    super(scene, x, y, "pacman", 0, tileSize, speed, 16);
+    super(scene, x, y, "pacman", 0, tileSize, speed, scene.tileSize / 2);
 
     this.setAnimations();
     this.setSFX();

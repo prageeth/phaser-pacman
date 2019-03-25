@@ -17,7 +17,9 @@ export class Portal extends Phaser.GameObjects.Sprite {
     public height: number,
     public props: PortalProps
   ) {
-    super(scene, x, y, null);
+    super(scene, x - scene.tileSize, y, null);
+
+    this.setOrigin(0, 0.5);
 
     this.scene.add.existing(this);
     this.setupPhysics();

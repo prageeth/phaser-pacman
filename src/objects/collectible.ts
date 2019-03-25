@@ -10,6 +10,8 @@ export abstract class Collectible extends Phaser.GameObjects.Sprite {
     super(scene, x, y, texture);
 
     this.key = key;
+    this.setOrigin(0.5, 0.5);
+
     this.scene.add.existing(this);
     this.setupPhysics();
   }

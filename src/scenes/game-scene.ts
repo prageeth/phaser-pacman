@@ -138,6 +138,8 @@ class GameScene extends Phaser.Scene {
     this.physics.overlap(this.pacman, this.pills, this.powerMode, null, this);
     this.physics.overlap(this.pacman, this.ghosts, this.meetGhost, null, this);
 
+    this.pacman.updatePosition(this.map, this.wallsLayer.layerIndex);
+
     // Updates objects positions.
     this.ghostsDo((ghost: Ghost) => {
       ghost.updatePosition(this.map, this.wallsLayer.layerIndex);
@@ -152,8 +154,6 @@ class GameScene extends Phaser.Scene {
     //     ghost.normalSoon();
     //   });
     // }
-
-    this.pacman.updatePosition(this.map, this.wallsLayer.layerIndex);
 
     this.checkControls();
   }
@@ -291,10 +291,10 @@ class GameScene extends Phaser.Scene {
    * @param portal - portal object.
    */
   teleport(unit: Pacman | Ghost, portal: Portal) {
-    const { x, y } = this.portals.getChildren().filter(
+    const { x, y, width, height } = this.portals.getChildren().filter(
       (p: Portal) => p.props.i === portal.props.target
     )[0] as Portal;
-    unit.teleport(portal.x, portal.y, x, y);
+    unit.teleport(portal.x, portal.y, x, y, width, height);
   }
 
   /**
