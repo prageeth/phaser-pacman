@@ -1,7 +1,9 @@
+import { Animatable } from './animatable';
+
 /**
  * Tuning objects base class.
  */
-export abstract class TurningObject extends Phaser.GameObjects.Sprite {
+export abstract class TurningObject extends Animatable {
   /**
    * Shout it turn.
    */
@@ -54,7 +56,7 @@ export abstract class TurningObject extends Phaser.GameObjects.Sprite {
   /**
    * Turn point on map grid.
    */
-  private turnPoint = new Phaser.Geom.Point();
+  turnPoint = new Phaser.Geom.Point();
 
   constructor(
     scene: Phaser.Scene,

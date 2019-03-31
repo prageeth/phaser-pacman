@@ -209,7 +209,7 @@ class PacmanGame {
       this.pacman.turning = Phaser.NONE;
     }
 
-    if (direction && direction !== Phaser.NONE) {
+    if (this.pacman.turning !== Phaser.NONE) {
       this.pacman.turn();
     }
   }

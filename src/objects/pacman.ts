@@ -94,7 +94,7 @@ export class Pacman extends TurningObject {
   move(direction: number) {
     super.move(direction);
 
-    this.play("munch");
+    this.playAnimation("munch");
 
     this.scaleX = this.scaleSize;
     this.angle = 0;
@@ -109,7 +109,7 @@ export class Pacman extends TurningObject {
   }
 
   stopMoving() {
-    this.play("resting");
+    this.playAnimation("resting");
   }
 
   /**
@@ -122,7 +122,7 @@ export class Pacman extends TurningObject {
     this.scaleX = this.scaleSize;
     this.angle = 0;
     this.sfx.munch.stop();
-    this.play("die");
+    this.playAnimation("die");
     this.sfx.death.play();
   }
 
@@ -131,7 +131,7 @@ export class Pacman extends TurningObject {
    */
   respawn() {
     super.respawn();
-    this.play("resting");
+    this.playAnimation("resting");
     this.started = false;
   }
 
@@ -139,53 +139,39 @@ export class Pacman extends TurningObject {
    * Inits object animations.
    */
   private setAnimations() {
-    if (!this.scene.anims.get("resting")) {
-      this.scene.anims.create({
-        key: "resting",
-        frames: [{ key: "pacman", frame: 1 }],
-        frameRate: 15,
-        repeat: -1
-      });
-    }
-    if (!this.scene.anims.get("munch")) {
-      this.scene.anims.create({
-        key: "munch",
-        frames: [
-          ...this.scene.anims.generateFrameNumbers("pacman", {
-            start: 0,
-            end: 2
-          }),
-          ...this.scene.anims.generateFrameNumbers("pacman", {
-            start: 1,
-            end: 0
-          })
-        ],
-        frameRate: 15,
-        repeat: -1
-      });
-    }
-    if (!this.scene.anims.get("die")) {
-      this.scene.anims.create({
-        key: "die",
+    this.loadAnimation("resting", {
+      frames: [{ key: "pacman", frame: 1 }],
+      frameRate: 15
+    });
+    this.loadAnimation("munch", {
+      frames: [
+        ...this.scene.anims.generateFrameNumbers("pacman", {
+          start: 0,
+          end: 2
+        }),
+        ...this.scene.anims.generateFrameNumbers("pacman", {
+          start: 1,
+          end: 0
+        })
+      ],
+      frameRate: 15
+    });
+    this.loadAnimation(
+      "die",
+      {
         frames: this.scene.anims.generateFrameNumbers("pacman", {
           start: 2,
           end: 13
         }),
         frameRate: 10,
         repeat: 0
-      });
-      this.on(
-        "animationcomplete",
-        (animation, frame) => {
-          if (animation.key === "die") {
-            this.visible = false;
-            this.frame = animation.frames[0];
-            this.respawn();
-          }
-        },
-        this
-      );
-    }
+      },
+      animation => {
+        this.visible = false;
+        this.frame = animation.frames[0];
+        this.respawn();
+      }
+    );
   }
 
   /**
@@ -196,5 +182,9 @@ export class Pacman extends TurningObject {
       munch: this.scene.sound.add("munch"),
       death: this.scene.sound.add("death")
     };
+  }
+
+  protected buildAnimationKey(key: string) {
+    return `pacman-${key}`;
   }
 }

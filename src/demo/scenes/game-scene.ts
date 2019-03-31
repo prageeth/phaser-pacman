@@ -16,7 +16,7 @@ class GameScene extends Phaser.Scene {
 
   create() {
     this.setControls();
-    this.pacmanGame = new PacmanGame(this, 16, true);
+    this.pacmanGame = new PacmanGame(this, 16, false);
     this.pacmanGame.reset({ level: 1, lives: 3, score: 0 });
     this.pacmanGame.init();
   }

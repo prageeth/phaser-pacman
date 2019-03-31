@@ -17,6 +17,7 @@ export class Ghost extends TurningObject {
   private homeMarker = new Phaser.Geom.Point();
   private recoverMode: GhostMode;
   private waveCount = 0;
+  private escapeTimer: Phaser.Time.TimerEvent;
   private timer: Phaser.Time.TimerEvent;
 
   constructor(
@@ -98,7 +99,7 @@ export class Ghost extends TurningObject {
     this.mode = "scatter";
     this.restoreSpeed();
     this.inGame = false;
-    this.play("walk");
+    this.playAnimation("walk");
     this.anims.stop();
     // this.anims.stop("walk", true);
     // this.timer.pause();
@@ -127,7 +128,7 @@ export class Ghost extends TurningObject {
     }
 
     this.mode = "frightened";
-    this.play("bored");
+    this.playAnimation("bored");
     this.updateSpeed(this.speed * 0.5);
     // this.timer.pause();
     this.onModeSwitch();
@@ -143,7 +144,7 @@ export class Ghost extends TurningObject {
 
     this.mode = this.recoverMode;
 
-    this.play("walk");
+    this.playAnimation("walk");
     this.restoreSpeed();
     // this.timer.resume();
     this.onModeSwitch();
@@ -154,7 +155,7 @@ export class Ghost extends TurningObject {
    */
   normalSoon() {
     if (this.mode === "frightened") {
-      this.play("prenormal");
+      this.playAnimation("prenormal");
     }
   }
 
@@ -190,25 +191,35 @@ export class Ghost extends TurningObject {
       targets: [this],
       ease: "Linear",
       duration: 300,
-      delay: delay,
-      alpha: 0,
+      alpha: 1,
+      paused: true,
       onComplete: () => {
         this.onStart();
         this.sfx.regenerate.play();
       }
     });
-    fadeIn.stop();
+
     const fadeOut = this.scene.add.tween({
       targets: [this],
       ease: "Linear",
       duration: 300,
-      delay: delay,
       alpha: 0,
+      paused: true,
       onComplete: () => {
         this.reset(this.home.x, this.home.y);
-        fadeIn.restart();
+        fadeIn.play(false);
       }
     });
+
+    this.escapeTimer && this.escapeTimer.destroy();
+    this.escapeTimer = this.scene.time.delayedCall(
+      delay,
+      () => {
+        fadeOut.play(false);
+      },
+      [],
+      this
+    );
   }
 
   /**
@@ -260,50 +271,30 @@ export class Ghost extends TurningObject {
    * Inits object animations.
    */
   private setAnimations() {
-    if (!this.scene.anims.get("walk")) {
-      this.scene.anims.create({
-        key: "walk",
-        frames: this.scene.anims.generateFrameNumbers(this.name, {
-          start: 0,
-          end: 7
-        }),
-        frameRate: 4,
-        repeat: -1
-      });
-    }
-    if (!this.scene.anims.get("bored")) {
-      this.scene.anims.create({
-        key: "bored",
-        frames: this.scene.anims.generateFrameNumbers(this.name, {
-          start: 8,
-          end: 9
-        }),
-        frameRate: 4,
-        repeat: -1
-      });
-    }
-    if (!this.scene.anims.get("prenormal")) {
-      this.scene.anims.create({
-        key: "prenormal",
-        frames: this.scene.anims.generateFrameNumbers(this.name, {
-          start: 8,
-          end: 11
-        }),
-        frameRate: 4,
-        repeat: -1
-      });
-    }
-    if (!this.scene.anims.get("dead")) {
-      this.scene.anims.create({
-        key: "dead",
-        frames: this.scene.anims.generateFrameNumbers(this.name, {
-          start: 12,
-          end: 15
-        }),
-        frameRate: 4,
-        repeat: -1
-      });
-    }
+    this.loadAnimation("walk", {
+      frames: this.scene.anims.generateFrameNumbers(this.name, {
+        start: 0,
+        end: 7
+      })
+    });
+    this.loadAnimation("bored", {
+      frames: this.scene.anims.generateFrameNumbers(this.name, {
+        start: 8,
+        end: 9
+      })
+    });
+    this.loadAnimation("prenormal", {
+      frames: this.scene.anims.generateFrameNumbers(this.name, {
+        start: 8,
+        end: 11
+      })
+    });
+    this.loadAnimation("dead", {
+      frames: this.scene.anims.generateFrameNumbers(this.name, {
+        start: 8,
+        end: 11
+      })
+    });
   }
 
   /**
@@ -335,7 +326,7 @@ export class Ghost extends TurningObject {
 
     this.target = Object.assign({}, this.scatterTarget);
     this.mode = "scatter";
-    this.play("walk");
+    this.playAnimation("walk");
 
     const duration = this.getWaveDuration();
 
@@ -362,7 +353,7 @@ export class Ghost extends TurningObject {
     }
 
     this.mode = "chase";
-    this.play("walk");
+    this.playAnimation("walk");
 
     const duration = this.getWaveDuration();
 
@@ -393,7 +384,7 @@ export class Ghost extends TurningObject {
     this.mode = "dead";
 
     this.inGame = false;
-    this.play("dead");
+    this.playAnimation("dead");
     this.updateSpeed(this.speed * 0.2);
     this.target = Object.assign({}, this.homeMarker);
     this.onModeSwitch();
@@ -405,7 +396,7 @@ export class Ghost extends TurningObject {
   private disableDeadMode() {
     this.mode = this.recoverMode;
 
-    this.play("walk");
+    this.playAnimation("walk");
     this.sfx.regenerate.play();
     this.alive = true;
     this.inGame = true;
@@ -419,5 +410,9 @@ export class Ghost extends TurningObject {
    */
   private onModeSwitch() {
     this.checkDirection(this.opposites[this.current]);
+  }
+
+  protected buildAnimationKey(key: string) {
+    return `ghost-${this.name}-${key}`;
   }
 }
