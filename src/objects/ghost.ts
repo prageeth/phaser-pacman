@@ -58,7 +58,7 @@ export class Ghost extends TurningObject {
 
     // Checks if new grid position.
     if (!Phaser.Geom.Point.Equals(this.prevMarker, this.marker)) {
-      const posibilities = this.getPosibleDirections();
+      const posibilities = this.getPossibleDirections();
 
       // Make move decision.
       if (posibilities.length > 1) {
@@ -225,9 +225,9 @@ export class Ghost extends TurningObject {
   /**
    * Gets all possible direction.
    */
-  private getPosibleDirections() {
+  private getPossibleDirections() {
     return this.directions.reduce((indexes, point, i) => {
-      if (point && point.index === -1 && i !== this.opposites[this.current]) {
+      if (point && i !== this.opposites[this.current]) {
         indexes.push(i);
       }
       return indexes;
